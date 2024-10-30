@@ -1,0 +1,78 @@
+---
+title: "pra_4"
+author: "hanbing xuan"
+date: "2024-10-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(sf)
+library(here)
+library(terra)
+library(dplyr)
+library(ggplot2)
+library(tmap)
+library(tidyverse)
+#install.packages('countrycode')
+library(countrycode)
+```
+```{r}
+world_gdf <- sf::st_read('World_Countries_(Generalized)_9029012925078512962.geojson')
+
+index_data_df <- read_csv('HDR23-24_Composite_indices_complete_time_series.csv')
+```
+
+```{r}
+columns_to_keep <- c('iso3','country','hdicode','gii_2010',	'gii_2019')
+
+index_data_df <- index_data_df %>% dplyr::select(all_of(columns_to_keep))
+
+non_null_index_data_df <- index_data_df %>% filter(!is.na(gii_2010)) %>% filter(!is.na(gii_2019))
+
+country_level_index_data_df <- non_null_index_data_df %>% filter(!is.na(hdicode))
+
+world_gdf["iso3"] <- countrycode(world_gdf$ISO, origin="iso2c", destination="iso3c")
+```
+
+
+
+
+```{r}
+world_w_gii_gdf <- world_gdf %>% left_join(country_level_index_data_df, by = c("iso3"))
+world_w_gii_gdf["gii_diff_2010_and_2019"] <- world_w_gii_gdf$gii_2019 - world_w_gii_gdf$gii_2010
+```
+
+
+```{r}
+plot(world_w_gii_gdf %>% select(all_of(c("gii_2010","geometry"))))
+```
+
+```{r}
+plot(world_w_gii_gdf %>% select(all_of(c("gii_2019","geometry"))))
+```
+
+```{r}
+plot(world_w_gii_gdf %>% select(all_of(c("gii_diff_2010_and_2019","geometry"))))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
